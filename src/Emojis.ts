@@ -99,7 +99,6 @@ const emojisHex = [
   0x1f608, // Comment to prevent autoformat, this keeps each on each line
   0x1f47f, // Comment to prevent autoformat, this keeps each on each line
   0x1f480, // Comment to prevent autoformat, this keeps each on each line
-  0x2620, // Comment to prevent autoformat, this keeps each on each line
   0x1f4a9, // Comment to prevent autoformat, this keeps each on each line
   0x1f921, // Comment to prevent autoformat, this keeps each on each line
   0x1f479, // Comment to prevent autoformat, this keeps each on each line
@@ -1024,6 +1023,7 @@ const emojisHex = [
   0x1f4ce, // Comment to prevent autoformat, this keeps each on each line
   0x1f587, // Comment to prevent autoformat, this keeps each on each line
   0x1f4cf, // Comment to prevent autoformat, this keeps each on each line
+  0x1f4d0, // Comment to prevent autoformat, this keeps each on each line
 ];
 
 export const emojis = emojisHex.map(hex => String.fromCodePoint(hex))
