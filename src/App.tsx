@@ -15,9 +15,10 @@ import {
   styled,
 } from "@mui/joy";
 import { Check, ContentCopy, SwapVert, Upload } from "@mui/icons-material";
-import { decode, encode, Input } from "./EmojiEncoder";
+import { decode, encode, FileInput, Input } from "./EmojiEncoder";
 import { emojisReverse } from "./Emojis";
 import { FileDrop } from "react-file-drop";
+import { byteToBase64 } from "./B64";
 
 enum Mode {
   Encode,
@@ -53,11 +54,21 @@ function App() {
     setMode(mode);
   };
 
-  const onCopyClicked = (output: string) => {
-    navigator.clipboard.writeText(output);
+  const onCopyClicked = (output: string | FileInput) => {
+    if (typeof output === "string") {
+      navigator.clipboard.writeText(output);
+    } else {
+      navigator.clipboard.write([
+        new ClipboardItem({ [output.mime]: new Blob([output.bytes]) }),
+      ]);
+    }
   };
 
-  const onSwapClicked = (output: string) => {
+  const onSwapClicked = (output: string | FileInput) => {
+    setMode(mode === Mode.Encode ? Mode.Decode : Mode.Encode);
+    if (typeof output !== "string") {
+      setMode(Mode.Encode);
+    }
     setInput(output);
   };
 
@@ -84,10 +95,13 @@ function App() {
   );
 }
 
-function Output(props: { output: string }) {
-  const fontSize = Math.max(20, 60 - Math.floor(props.output.length / 10));
+function Output(props: { output: string | FileInput }) {
+  const fontSize =
+    typeof props.output === "string"
+      ? Math.max(20, 60 - Math.floor(props.output.length / 10))
+      : 20;
 
-  return (
+  return typeof props.output === "string" ? (
     <Stack>
       {props.output.split("\n").map((line) => (
         <Typography
@@ -101,17 +115,58 @@ function Output(props: { output: string }) {
         </Typography>
       ))}
     </Stack>
+  ) : (
+    <Stack spacing={2} textAlign={"center"}>
+      <Typography fontSize={20}>Dette ser ut som en fil</Typography>
+      <Box
+        justifyContent={"center"}
+        position="relative"
+        display="flex"
+        width="100%"
+      >
+        <Typography
+          sx={{ borderRadius: "1em", padding: "0.5em" }}
+          fontSize={20}
+          variant="soft"
+        >
+          {props.output.name}
+        </Typography>
+        <Button
+          variant="soft"
+          sx={{
+            display: "flex",
+            float: "right",
+            position: "absolute",
+            right: "0",
+          }}
+        >
+          Vis som tekst
+        </Button>
+      </Box>
+      {props.output.mime.toLowerCase().startsWith("image") && (
+        <img
+          alt={props.output.name}
+          style={{ width: "100%" }}
+          src={`data:${props.output.mime};base64,${byteToBase64(
+            props.output.bytes
+          )}`}
+        />
+      )}
+    </Stack>
   );
 }
 
 function Toolbar(props: {
-  output: string;
+  output: string | FileInput;
   mode: Mode;
-  onCopyClick: (output: string) => void;
-  onSwapClick: (output: string) => void;
+  onCopyClick: (output: string | FileInput) => void;
+  onSwapClick: (output: string | FileInput) => void;
 }) {
   const [hasCopied, setHasCopied] = useState<boolean>(false);
-  const [emojiCount, nonEmojiCount] = countEmojis(props.output);
+  const [emojiCount, nonEmojiCount] =
+    typeof props.output === "string"
+      ? countEmojis(props.output)
+      : [props.output.bytes.length, 0];
 
   const onCopyContentTooltipClose = () => {
     setHasCopied(false);
@@ -119,6 +174,7 @@ function Toolbar(props: {
 
   const onCopyClick = (evt: React.MouseEvent<HTMLAnchorElement>) => {
     props.onCopyClick(props.output);
+    setHasCopied(true);
   };
 
   const onSwapClick = (evt: React.MouseEvent<HTMLButtonElement>) => {
@@ -134,7 +190,9 @@ function Toolbar(props: {
       <Typography alignSelf={"center"} fontSize={16}>
         {props.mode === Mode.Encode
           ? `${emojiCount} emojis`
-          : `${emojiCount + nonEmojiCount} characters`}
+          : `${emojiCount + nonEmojiCount} ${
+              typeof props.output === "string" ? "characters" : "bytes"
+            }`}
       </Typography>
       <Stack direction={"row"} spacing={1}>
         <Tooltip
@@ -221,11 +279,10 @@ function InputBox(props: {
     reader.onload = async function (e) {
       if (e.target != null) {
         const bytes = e.target.result as ArrayBuffer;
-        const blob = new Blob([bytes]);
 
         props.onInputChange({
           name: file.name,
-          mime: blob.type,
+          mime: file.type,
           bytes: new Uint8Array(bytes),
         });
       }
@@ -370,7 +427,7 @@ function InputBox(props: {
           variant="solid"
           checked={props.mode === Mode.Decode}
           onChange={onSwitchChange}
-          sx={{ display: "inline-flex", alignSelf: "center" }}
+          sx={{ alignSelf: "center" }}
           startDecorator={
             <Typography
               fontFamily={"Inconsolata"}

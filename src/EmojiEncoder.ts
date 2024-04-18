@@ -26,18 +26,20 @@ export function encode(input: Input) {
   if (typeof(input) === "string") {
     binary = text2binary(input);
   } else {
-    let values: Array<number> = [0b111111111, 0b111111111]; 
+    let values: Array<number> = [0b11111111, 0b11111111]; 
     const encoder = new TextEncoder();
     const fileNameBytes = encoder.encode(input.name)
     const mimeTypeBytes = encoder.encode(input.mime)
+    console.log(input.mime)
 
     values.push(fileNameBytes.length)
-    fileNameBytes.forEach(byte => values.push(byte))
     values.push(mimeTypeBytes.length)
+    fileNameBytes.forEach(byte => values.push(byte))
     mimeTypeBytes.forEach(byte => values.push(byte))
     input.bytes.forEach(byte => values.push(byte));
 
-    binary = values.map(byte => byte.toString(2).padStart(8)).join("");
+    console.log(values)
+    binary = values.map(byte => byte.toString(2).padStart(8, "0")).join("");
   }
 
   const padding = binary.length % 10 !== 0 ? 10 - (binary.length % 10) : 0;
@@ -73,6 +75,20 @@ export function decode(emojis: string) {
   }
 
   const decoder = new TextDecoder("utf-8");
+  if (utf8bytes[0] === 0b11111111 && utf8bytes[1] === 0b11111111) {
+    const fileNameLength = utf8bytes[2]
+    const mimeTypeLength = utf8bytes[3]
+
+    const fileName = decoder.decode(utf8bytes.slice(4, 4 + fileNameLength))
+    const mimeType = decoder.decode(utf8bytes.slice(4 + fileNameLength, 4 + fileNameLength + mimeTypeLength))
+  
+    return {
+      name: fileName,
+      mime: mimeType,
+      bytes: utf8bytes.slice(4 + fileNameLength + mimeTypeLength)
+    } as FileInput
+  }
+
   const decoded = decoder.decode(utf8bytes);
 
   return decoded;
