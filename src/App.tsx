@@ -3,6 +3,7 @@ import "./App.css";
 import {
   Box,
   Button,
+  Chip,
   Container,
   Divider,
   IconButton,
@@ -14,7 +15,13 @@ import {
   Typography,
   styled,
 } from "@mui/joy";
-import { Check, ContentCopy, SwapVert, Upload } from "@mui/icons-material";
+import {
+  Check,
+  ContentCopy,
+  SwapVert,
+  Upload,
+  Cancel,
+} from "@mui/icons-material";
 import { decode, encode, FileInput, Input } from "./EmojiEncoder";
 import { emojisReverse } from "./Emojis";
 import { FileDrop } from "react-file-drop";
@@ -143,6 +150,11 @@ function Output(props: { output: string | FileInput }) {
           Vis som tekst
         </Button>
       </Box>
+      <Divider sx={{ width: "100%" }} orientation={"horizontal"}>
+        <Typography sx={{ fontFamily: "Inconsolata" }} color="neutral">
+          Forhåndsvisning
+        </Typography>
+      </Divider>
       {props.output.mime.toLowerCase().startsWith("image") && (
         <img
           alt={props.output.name}
@@ -351,6 +363,7 @@ function InputBox(props: {
             display="flex"
             alignItems="center"
             justifyContent="center"
+            position="relative"
           >
             <Sheet
               color={dropHover ? "primary" : "neutral"}
@@ -371,6 +384,17 @@ function InputBox(props: {
                   : props.input.name}
               </Typography>
             </Sheet>
+            <IconButton
+              sx={{
+                "&:hover": { bgcolor: "transparent" },
+                right: "0",
+                marginRight: "1em",
+                position: "absolute",
+              }}
+              color="danger"
+            >
+              <Cancel />
+            </IconButton>
           </Box>
         </FileDrop>
         <Textarea
