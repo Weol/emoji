@@ -7,6 +7,7 @@ import {
   Container,
   Divider,
   IconButton,
+  Link,
   Sheet,
   Stack,
   Switch,
@@ -22,10 +23,11 @@ import {
   Upload,
   Cancel,
 } from "@mui/icons-material";
-import { decode, encode, FileInput, Input } from "./EmojiEncoder";
+import { decode, encode, FileData, Input } from "./EmojiEncoder";
 import { emojisReverse } from "./Emojis";
 import { FileDrop } from "react-file-drop";
 import { byteToBase64 } from "./B64";
+import { render } from "@testing-library/react";
 
 enum Mode {
   Encode,
@@ -61,7 +63,7 @@ function App() {
     setMode(mode);
   };
 
-  const onCopyClicked = (output: string | FileInput) => {
+  const onCopyClicked = (output: string | FileData) => {
     if (typeof output === "string") {
       navigator.clipboard.writeText(output);
     } else {
@@ -71,7 +73,7 @@ function App() {
     }
   };
 
-  const onSwapClicked = (output: string | FileInput) => {
+  const onSwapClicked = (output: string | FileData) => {
     setMode(mode === Mode.Encode ? Mode.Decode : Mode.Encode);
     if (typeof output !== "string") {
       setMode(Mode.Encode);
@@ -102,60 +104,74 @@ function App() {
   );
 }
 
-function Output(props: { output: string | FileInput }) {
+function Output(props: { output: string | FileData }) {
+  const [viewAsText, setViewAsText] = useState<boolean>(false);
+
   const fontSize =
     typeof props.output === "string"
       ? Math.max(20, 60 - Math.floor(props.output.length / 10))
       : 20;
 
-  return typeof props.output === "string" ? (
-    <Stack>
-      {props.output.split("\n").map((line) => (
-        <Typography
-          sx={{
-            whitespace: "pre-wrap",
+  const onViewAsTextClick = () => {
+    setViewAsText(!viewAsText);
+  };
+
+  const renderFileAsText = (bytes: Uint8Array) => {
+    const decoder = new TextDecoder();
+    return renderText(decoder.decode(bytes));
+  };
+
+  const renderText = (text: string) => (
+    <Stack textAlign={"left"}>
+      {text.split("\n").map((line) => (
+        <pre
+          style={{
+            margin: "0",
             wordWrap: "break-word",
-            fontSize: `${fontSize}px`,
+            whiteSpace: "pre-wrap",
           }}
         >
-          {line}
-        </Typography>
+          <Typography
+            sx={{
+              fontSize: `${fontSize}px`,
+            }}
+          >
+            {line}
+          </Typography>
+        </pre>
       ))}
     </Stack>
-  ) : (
+  );
+
+  return typeof props.output === "string" ? (
+    renderText(props.output)
+  ) : props.output.mime.toLowerCase().startsWith("image") ? (
     <Stack spacing={2} textAlign={"center"}>
-      <Typography fontSize={20}>Dette ser ut som en fil</Typography>
-      <Box
-        justifyContent={"center"}
-        position="relative"
-        display="flex"
-        width="100%"
-      >
-        <Typography
-          sx={{ borderRadius: "1em", padding: "0.5em" }}
-          fontSize={20}
-          variant="soft"
+      <Typography fontSize={16}>
+        Dette ser ut som en fil. Se forhåndsvisning eller{" "}
+        <Link
+          href={window.URL.createObjectURL(
+            new Blob([props.output.bytes], { type: props.output.mime })
+          )}
         >
-          {props.output.name}
-        </Typography>
-        <Button
-          variant="soft"
-          sx={{
-            display: "flex",
-            float: "right",
-            position: "absolute",
-            right: "0",
-          }}
-        >
-          Vis som tekst
-        </Button>
-      </Box>
+          last ned
+        </Link>
+        .
+      </Typography>
       <Divider sx={{ width: "100%" }} orientation={"horizontal"}>
         <Typography sx={{ fontFamily: "Inconsolata" }} color="neutral">
-          Forhåndsvisning
+          {props.output.name}
         </Typography>
       </Divider>
-      {props.output.mime.toLowerCase().startsWith("image") && (
+      {!props.output.mime.toLowerCase().startsWith("image") && (
+        <Typography>
+          Kan ikke forhåndsvise denne filen.{" "}
+          <Link component={"button"} onClick={onViewAsTextClick}>
+            Prøv å vis som tekst
+          </Link>
+        </Typography>
+      )}
+      {props.output.mime.toLowerCase().startsWith("image") && !viewAsText && (
         <img
           alt={props.output.name}
           style={{ width: "100%" }}
@@ -165,14 +181,40 @@ function Output(props: { output: string | FileInput }) {
         />
       )}
     </Stack>
+  ) : (
+    <Stack spacing={2} textAlign={"center"}>
+      <Typography fontSize={16}>
+        Dette ser ut som en fil. Kan ikke forhåndsvise,{" "}
+        <Link
+          href={window.URL.createObjectURL(
+            new Blob([props.output.bytes], { type: props.output.mime })
+          )}
+        >
+          last ned
+        </Link>{" "}
+        eller{" "}
+        <Link component={"button"} onClick={onViewAsTextClick}>
+          prøv å vis som tekst
+        </Link>
+        .
+      </Typography>
+      {viewAsText && (
+        <Divider sx={{ width: "100%" }} orientation={"horizontal"}>
+          <Typography sx={{ fontFamily: "Inconsolata" }} color="neutral">
+            {props.output.name}
+          </Typography>
+        </Divider>
+      )}
+      {viewAsText && renderFileAsText(props.output.bytes)}
+    </Stack>
   );
 }
 
 function Toolbar(props: {
-  output: string | FileInput;
+  output: string | FileData;
   mode: Mode;
-  onCopyClick: (output: string | FileInput) => void;
-  onSwapClick: (output: string | FileInput) => void;
+  onCopyClick: (output: string | FileData) => void;
+  onSwapClick: (output: string | FileData) => void;
 }) {
   const [hasCopied, setHasCopied] = useState<boolean>(false);
   const [emojiCount, nonEmojiCount] =
@@ -275,6 +317,10 @@ function InputBox(props: {
     typeof props.input === "string" ? countEmojis(props.input) : [0, 0];
   const sumCount = emojiCount + nonEmojiCount;
 
+  const onClearClick = () => {
+    props.onInputChange("");
+  };
+
   const onTextChanged = (evt: React.ChangeEvent<HTMLTextAreaElement>) => {
     let text = evt.target.value;
     props.onInputChange(text);
@@ -369,7 +415,7 @@ function InputBox(props: {
               color={dropHover ? "primary" : "neutral"}
               variant="soft"
               sx={{
-                borderRadius: "1em",
+                borderRadius: "0.5em",
                 boxShadow: dropHover ? "0 0 7px 0px white;" : "none",
               }}
             >
@@ -384,17 +430,6 @@ function InputBox(props: {
                   : props.input.name}
               </Typography>
             </Sheet>
-            <IconButton
-              sx={{
-                "&:hover": { bgcolor: "transparent" },
-                right: "0",
-                marginRight: "1em",
-                position: "absolute",
-              }}
-              color="danger"
-            >
-              <Cancel />
-            </IconButton>
           </Box>
         </FileDrop>
         <Textarea
@@ -445,6 +480,19 @@ function InputBox(props: {
         alignItems="center"
         position={"relative"}
       >
+        <Tooltip arrow variant="plain" title="Reset">
+          <IconButton
+            onClick={onClearClick}
+            component="label"
+            sx={{
+              display: "flex",
+              position: "absolute",
+              left: "0",
+            }}
+          >
+            <Cancel />
+          </IconButton>
+        </Tooltip>
         <Switch
           color="neutral"
           size="lg"
@@ -479,7 +527,6 @@ function InputBox(props: {
               component="label"
               sx={{
                 display: "flex",
-                float: "right",
                 position: "absolute",
                 right: "0",
               }}

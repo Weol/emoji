@@ -18,8 +18,8 @@ function binary2number(block: string): number {
   return parseInt(block.padEnd(8, "0"), 2);
 }
 
-export type FileInput = { name: string; mime: string, bytes: Uint8Array }
-export type Input = string | FileInput ;
+export type FileData = { name: string; mime: string, bytes: Uint8Array }
+export type Input = string | FileData ;
 
 export function encode(input: Input) {
   let binary: string
@@ -86,7 +86,7 @@ export function decode(emojis: string) {
       name: fileName,
       mime: mimeType,
       bytes: utf8bytes.slice(4 + fileNameLength + mimeTypeLength)
-    } as FileInput
+    } as FileData
   }
 
   const decoded = decoder.decode(utf8bytes);
