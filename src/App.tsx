@@ -1,9 +1,7 @@
-import React, { PropsWithChildren, useState } from "react";
+import React, { useState } from "react";
 import "./App.css";
 import {
   Box,
-  Button,
-  Chip,
   Container,
   Divider,
   IconButton,
@@ -27,7 +25,6 @@ import { decode, encode, FileData, Input } from "./EmojiEncoder";
 import { emojisReverse } from "./Emojis";
 import { FileDrop } from "react-file-drop";
 import { byteToBase64 } from "./B64";
-import { render } from "@testing-library/react";
 
 enum Mode {
   Encode,
