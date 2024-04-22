@@ -2,12 +2,12 @@ name: Deploy site
 
 on:
   push:
-    branches: [ "main" ]
-    
+    branches: ["main"]
+
 env:
   APP_LOCATION: "/"
   APP_ARTIFACT_LOCATION: "build"
-  SWA_TOKEN: ${{ secrets.SWA_TOKEN }} 
+  SWA_TOKEN: ${{ secrets.SWA_TOKEN }}
 
 permissions:
   contents: read
@@ -17,7 +17,6 @@ jobs:
     permissions:
       contents: read
       pull-requests: write
-    if: github.event_name == 'push' || (github.event_name == 'pull_request' && github.event.action != 'closed')
     runs-on: ubuntu-latest
     name: Build and deploy
     steps:
