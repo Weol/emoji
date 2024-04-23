@@ -13,6 +13,7 @@ import {
   Tooltip,
   Typography,
   styled,
+  useTheme,
 } from "@mui/joy";
 import {
   Check,
@@ -21,10 +22,11 @@ import {
   Upload,
   Cancel,
 } from "@mui/icons-material";
-import { decode, encode, FileData, Input } from "./EmojiEncoder";
+import { decode, encode, FileData, Input } from "./Encoder";
 import { emojisReverse } from "./Emojis";
 import { FileDrop } from "react-file-drop";
 import { byteToBase64 } from "./B64";
+import useMediaQuery from "@mui/material/useMediaQuery";
 
 enum Mode {
   Encode,
@@ -213,6 +215,7 @@ function Toolbar(props: {
   onCopyClick: (output: string | FileData) => void;
   onSwapClick: (output: string | FileData) => void;
 }) {
+  const theme = useTheme()
   const [hasCopied, setHasCopied] = useState<boolean>(false);
   const [emojiCount, nonEmojiCount] =
     typeof props.output === "string"
@@ -236,9 +239,9 @@ function Toolbar(props: {
     <Stack
       direction={"row"}
       justifyContent="space-between"
-      sx={{ padding: "0 0.5em 0 0.5em" }}
+      sx={{ padding: ["0.5em", "0 0.5em 0 0.5em"] }}
     >
-      <Typography alignSelf={"center"} fontSize={16}>
+      <Typography alignSelf={"center"} fontSize={useMediaQuery(theme.breakpoints.down("sm")) ? 20 : 16}>
         {props.mode === Mode.Encode
           ? `${emojiCount} emojis`
           : `${emojiCount + nonEmojiCount} ${
@@ -262,6 +265,7 @@ function Toolbar(props: {
         >
           <IconButton
             sx={{ "&:hover": { bgcolor: "transparent" } }}
+            size={useMediaQuery(theme.breakpoints.down("sm")) ? "lg" : "sm"}
             variant="plain"
             onClick={onCopyClick}
           >
@@ -280,6 +284,7 @@ function Toolbar(props: {
           <IconButton
             sx={{ "&:hover": { bgcolor: "transparent" } }}
             variant="plain"
+            size={useMediaQuery(theme.breakpoints.down("sm")) ? "lg" : "sm"}
             onClick={onSwapClick}
           >
             <SwapVert />
@@ -308,11 +313,13 @@ function InputBox(props: {
   mode: Mode;
   onModeSwitch: (mode: Mode) => void;
 }) {
+  const theme = useTheme()
   const [frameHover, setFrameHover] = useState<boolean>(false);
   const [dropHover, setDropHover] = useState<boolean>(false);
   const [emojiCount, nonEmojiCount] =
     typeof props.input === "string" ? countEmojis(props.input) : [0, 0];
   const sumCount = emojiCount + nonEmojiCount;
+  const buttonSize = useMediaQuery(theme.breakpoints.down("sm")) ? "lg" : "sm"
 
   const onClearClick = () => {
     props.onInputChange("");
@@ -481,6 +488,7 @@ function InputBox(props: {
           <IconButton
             onClick={onClearClick}
             component="label"
+            size={buttonSize}
             sx={{
               display: "flex",
               position: "absolute",
@@ -522,6 +530,7 @@ function InputBox(props: {
           <Tooltip arrow variant="plain" title="Encode file">
             <IconButton
               component="label"
+              size={buttonSize}
               sx={{
                 display: "flex",
                 position: "absolute",
