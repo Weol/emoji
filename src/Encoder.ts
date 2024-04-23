@@ -1,5 +1,19 @@
 import { emojis, emojisReverse } from "./Emojis";
 
+export function encodeString(input: string) {
+  const encoder = new TextEncoder();
+  const bytes = Array.from(encoder.encode(input))
+  const binaryBlocks = bytes.map(byte => byte.toString(2).padStart(8, "0"));
+  const binary = binaryBlocks.join("")
+  const padding = (bytes.length % 5) * 2
+  const padded = binary.padEnd(binary.length + padding, "0");
+  const blocks = padded.match(new RegExp(`.{1,10}`, "g")) ?? [];
+  const indexes = blocks.map((block) => parseInt(block, 2));
+  const encoded = indexes.map(index => emojis[index])
+  const output = encoded.join("")
+  return output
+}
+
 function text2binary(text: string) {
   const encoder = new TextEncoder();
 
