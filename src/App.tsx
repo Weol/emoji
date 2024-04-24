@@ -36,12 +36,15 @@ enum Mode {
 function countEmojis(text: string) {
   const iterator = text[Symbol.iterator]();
   let char = iterator.next();
-
+  
   let emojis = 0;
   let nonEmojis = 0;
   while (!char.done) {
-    if (emojisReverse.get(char.value)) emojis++;
-    else nonEmojis++;
+    if (emojisReverse.get(char.value)) {
+      emojis++
+    } else if (char.value !== String.fromCodePoint(0xfe0f) && (char.value.charCodeAt(0) !== 0xd83d && char.value.charCodeAt(1) !== 0xde00)) {
+      nonEmojis++;
+    }
 
     char = iterator.next();
   }

@@ -71,8 +71,9 @@ export function decode(emojis: string) {
 
   while (!emoji.done) {
     const index = emojisReverse.get(emoji.value);
-    if (index !== undefined) binaries.push(index.toString(2).padStart(10, "0"));
-
+    if (index !== undefined) 
+      binaries.push(index.toString(2).padStart(10, "0"));
+    
     emoji = iterator.next();
   }
 

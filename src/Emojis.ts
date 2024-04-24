@@ -1026,8 +1026,8 @@ const emojisHex = [
   0x1f4d0, // Comment to prevent autoformat, this keeps each on each line
 ];
 
-export const emojis = emojisHex.map(hex => String.fromCodePoint(hex))
+export const emojis = emojisHex.map(hex => String.fromCodePoint(hex, 0xFE0F))
 
 const reversed = new Map<string, number>();
-emojis.forEach((emoji, i) => reversed.set(emoji, i));
+emojisHex.forEach((emoji, i) => reversed.set(String.fromCodePoint(emoji), i));
 export const emojisReverse = reversed;
