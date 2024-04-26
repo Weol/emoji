@@ -36,13 +36,17 @@ enum Mode {
 function countEmojis(text: string) {
   const iterator = text[Symbol.iterator]();
   let char = iterator.next();
-  
+
   let emojis = 0;
   let nonEmojis = 0;
   while (!char.done) {
     if (emojisReverse.get(char.value)) {
-      emojis++
-    } else if (char.value !== String.fromCodePoint(0xfe0f) && (char.value.charCodeAt(0) !== 0xd83d && char.value.charCodeAt(1) !== 0xde00)) {
+      emojis++;
+    } else if (
+      char.value !== String.fromCodePoint(0xfe0f) &&
+      char.value.charCodeAt(0) !== 0xd83d &&
+      char.value.charCodeAt(1) !== 0xde00
+    ) {
       nonEmojis++;
     }
 
@@ -174,13 +178,15 @@ function Output(props: { output: string | FileData }) {
         </Typography>
       )}
       {props.output.mime.toLowerCase().startsWith("image") && !viewAsText && (
-        <img
-          alt={props.output.name}
-          style={{ width: "100%" }}
-          src={`data:${props.output.mime};base64,${byteToBase64(
-            props.output.bytes
-          )}`}
-        />
+        <Box sx={{ maxWidth: "100%", height: "auto" }}>
+          <img
+            alt={props.output.name}
+            style={{ maxWidth: "100%", height: "auto" }}
+            src={`data:${props.output.mime};base64,${byteToBase64(
+              props.output.bytes
+            )}`}
+          />
+        </Box>
       )}
     </Stack>
   ) : (
@@ -218,7 +224,7 @@ function Toolbar(props: {
   onCopyClick: (output: string | FileData) => void;
   onSwapClick: (output: string | FileData) => void;
 }) {
-  const theme = useTheme()
+  const theme = useTheme();
   const [hasCopied, setHasCopied] = useState<boolean>(false);
   const [emojiCount, nonEmojiCount] =
     typeof props.output === "string"
@@ -244,7 +250,10 @@ function Toolbar(props: {
       justifyContent="space-between"
       sx={{ padding: ["0.5em", "0 0.5em 0 0.5em"] }}
     >
-      <Typography alignSelf={"center"} fontSize={useMediaQuery(theme.breakpoints.down("sm")) ? 20 : 16}>
+      <Typography
+        alignSelf={"center"}
+        fontSize={useMediaQuery(theme.breakpoints.down("sm")) ? 20 : 16}
+      >
         {props.mode === Mode.Encode
           ? `${emojiCount} emojis`
           : `${emojiCount + nonEmojiCount} ${
@@ -316,13 +325,13 @@ function InputBox(props: {
   mode: Mode;
   onModeSwitch: (mode: Mode) => void;
 }) {
-  const theme = useTheme()
+  const theme = useTheme();
   const [frameHover, setFrameHover] = useState<boolean>(false);
   const [dropHover, setDropHover] = useState<boolean>(false);
   const [emojiCount, nonEmojiCount] =
     typeof props.input === "string" ? countEmojis(props.input) : [0, 0];
   const sumCount = emojiCount + nonEmojiCount;
-  const buttonSize = useMediaQuery(theme.breakpoints.down("sm")) ? "lg" : "sm"
+  const buttonSize = useMediaQuery(theme.breakpoints.down("sm")) ? "lg" : "sm";
 
   const onClearClick = () => {
     props.onInputChange("");
