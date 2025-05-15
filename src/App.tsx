@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+Detimport React, { useState } from "react";
 import "./App.css";
 import {
   Box,
@@ -154,13 +154,13 @@ function Output(props: { output: string | FileData }) {
   ) : props.output.mime.toLowerCase().startsWith("image") ? (
     <Stack spacing={2} textAlign={"center"}>
       <Typography fontSize={16}>
-        Dette ser ut som en fil. Se forhåndsvisning eller{" "}
+        This looks like a file. Check out the preview or{" "}
         <Link
           href={window.URL.createObjectURL(
             new Blob([props.output.bytes], { type: props.output.mime })
           )}
         >
-          last ned
+          download
         </Link>
         .
       </Typography>
