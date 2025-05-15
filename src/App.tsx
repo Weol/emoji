@@ -1,4 +1,4 @@
-Detimport React, { useState } from "react";
+import React, { useState } from "react";
 import "./App.css";
 import {
   Box,
