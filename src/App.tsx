@@ -171,10 +171,11 @@ function Output(props: { output: string | FileData }) {
       </Divider>
       {!props.output.mime.toLowerCase().startsWith("image") && (
         <Typography>
-          Kan ikke forhåndsvise denne filen.{" "}
+          Cannot preview this file.{" "}
           <Link component={"button"} onClick={onViewAsTextClick}>
-            Prøv å vis som tekst
+            Try to view as text
           </Link>
+          .
         </Typography>
       )}
       {props.output.mime.toLowerCase().startsWith("image") && !viewAsText && (
@@ -192,17 +193,17 @@ function Output(props: { output: string | FileData }) {
   ) : (
     <Stack spacing={2} textAlign={"center"}>
       <Typography fontSize={16}>
-        Dette ser ut som en fil. Kan ikke forhåndsvise,{" "}
+        This looks like a file. Cannot preview,{" "}
         <Link
           href={window.URL.createObjectURL(
             new Blob([props.output.bytes], { type: props.output.mime })
           )}
         >
-          last ned
+          download
         </Link>{" "}
-        eller{" "}
+        or{" "}
         <Link component={"button"} onClick={onViewAsTextClick}>
-          prøv å vis som tekst
+          try to view as text
         </Link>
         .
       </Typography>
